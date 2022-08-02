@@ -37,7 +37,8 @@ class ReferenceIDs(Source):
         # CVE - Source ID
         IDs = [[rows[i].text, [x.text for x in rows[i+1].iterchildren()]] for i in range(0, len(rows), 2)]
         for e in IDs:
-          vendorID = e[0] if not e[0].startswith(vendor.upper()+':') else e[0][len(vendor)+1:]
+          vendorID = (e[0][len(vendor) + 1:]
+                      if e[0].startswith(f'{vendor.upper()}:') else e[0])
           for cve in e[1]:
             if vendor not in self.cves[cve]:           self.cves[cve][vendor] = []
             if vendorID not in self.cves[cve][vendor]: self.cves[cve][vendor].append(vendorID)

@@ -22,7 +22,7 @@ from lib.Source import Source
 
 SOURCE_NAME = "msbulletin"
 MSRCAPIURL = "https://api.msrc.microsoft.com"
-SOURCE_FILE = MSRCAPIURL + "/Updates"
+SOURCE_FILE = f"{MSRCAPIURL}/Updates"
 API_VERSION = '2016-08-01'
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 GZIP_FILE   = os.path.join(CURRENT_PATH,"../data/old_Microsoft_bulletins.gz")
@@ -135,8 +135,7 @@ def get_msbulletin(url):
                             products.append(producti)
                             product_by_id[prodi["ProductID"]] = prodpos
             if "Vulnerability" in cvrfdoc:
-                for vuli in cvrfdoc["Vulnerability"]:
-                    vulnerabilities.append(vuli)
+                vulnerabilities.extend(iter(cvrfdoc["Vulnerability"]))
     return vulnerabilities, products, product_by_id, product_branches
 
 class MSBulletin(Source):
@@ -183,9 +182,16 @@ class MSBulletin(Source):
             productNames =[]
 
             for product in entry['ProductStatuses']:
-                for productId in product["ProductID"]:
-                    productNames.append({"id":productId,"name": products[product_by_id[productId]].get("Value", "") }) # Product Name
-                    
+                productNames.extend(
+                    {
+                        "id": productId,
+                        "name": products[product_by_id[productId]].get(
+                            "Value", ""
+                        ),
+                    }
+                    for productId in product["ProductID"]
+                )
+
             mskb[cve_number]['published'] = entry['RevisionHistory'][0]["Date"]  # PublishedDate
             mskb[cve_number]['modified'] = entry['RevisionHistory'][len(entry['RevisionHistory'])-1]["Date"]
             mskb[cve_number]['revisions'] = entry['RevisionHistory']
@@ -197,9 +203,11 @@ class MSBulletin(Source):
             severity = "Unknown"
             threats = []
             for threati in entry["Threats"]:
-                if threati["Type"] == 3:
-                    if sevs[threati["Description"]["Value"]] > sevs[severity]:
-                        severity = threati["Description"]["Value"]
+                if (
+                    threati["Type"] == 3
+                    and sevs[threati["Description"]["Value"]] > sevs[severity]
+                ):
+                    severity = threati["Description"]["Value"]
                 threats.append(threati)
 
             mskb[cve_number]['threats'] = threats
@@ -219,15 +227,20 @@ class MSBulletin(Source):
             mskb[cve_number]['description'] = description
             mskb[cve_number]['productImpacted'] = productNames
             mskb[cve_number]['cves'] = entry['CVE']  # CVE  id
-            mskb[cve_number]['cves_url'] = "https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{}".format(entry['CVE'] ) # CVE url
             mskb[cve_number][
-                'knowledgebase_url'] = "https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{}".format(
-                entry['CVE'])
+                'cves_url'
+            ] = f"https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{entry['CVE']}"
+
             mskb[cve_number][
-                'bulletin_url'] = "https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{}".format(
-                entry['CVE'])
+                'knowledgebase_url'
+            ] = f"https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{entry['CVE']}"
+
+            mskb[cve_number][
+                'bulletin_url'
+            ] = f"https://portal.msrc.microsoft.com/en-US/security-guidance/advisory/{entry['CVE']}"
+
             mskb[cve_number]['bulletin_SOURCE_FILE'] = SOURCE_FILE
-            # mskb[cve_number]['knowledgebase_SOURCE_FILE'] = entry['knowledgeBaseUrl']  # File source of KB
+                # mskb[cve_number]['knowledgebase_SOURCE_FILE'] = entry['knowledgeBaseUrl']  # File source of KB
 
         for _id, data in mskb.items():
             data_cves = data.pop("cves")

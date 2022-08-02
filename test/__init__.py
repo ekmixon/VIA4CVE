@@ -14,15 +14,18 @@ _verbose = False
 
 
 def testAll(cves, testdata, verbose):
-  failed_tests = set()
-  for name, data in testdata.items():
-    if not test(cves, name, data['cve'], data['key'], data['val'], verbose):
-      failed_tests.add(name)
+  failed_tests = {
+      name
+      for name, data in testdata.items()
+      if not test(cves, name, data['cve'], data['key'], data['val'], verbose)
+  }
   if not verbose:
-    if len(failed_tests) != 0:
+    if failed_tests:
       print("[-] Some unit tests failed!")
-      for failure in failed_tests: print("  -> %s"%failure)
-    else: print("[+] All tests successful")
+      for failure in failed_tests:
+        print(f"  -> {failure}")
+    else:
+      print("[+] All tests successful")
 
 def test(cves, collection, cve, key, val, verbose):
   successful = False
@@ -45,12 +48,14 @@ def test(cves, collection, cve, key, val, verbose):
 
   try:
     if check_level(cves[cve], key, val):
-      if verbose: print("[+] %s test succeeded!"%collection)
+      if verbose:
+        print(f"[+] {collection} test succeeded!")
       return True
     else:
-      if verbose: print("[-] %s test not succesful!"%collection)
+      if verbose:
+        print(f"[-] {collection} test not succesful!")
   except Exception as e:
     if verbose:
-      print("[-] %s test failed! %s"%(collection, e))
+      print(f"[-] {collection} test failed! {e}")
       traceback.print_exc()
   return False

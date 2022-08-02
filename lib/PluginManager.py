@@ -23,10 +23,10 @@ class PluginManager():
         lib = os.path.join("sources", x).replace("/", ".")
         i = importlib.import_module(lib)
         self.plugins.append(getattr(i, x.split("/")[-1])())
-        print("[+] Loaded plugin %s"%x)
+        print(f"[+] Loaded plugin {x}")
       except Exception as e:
-        print("[!] Failed to load module %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to load module {x}: ")
+        print(f"[!]  -> {e}")
         traceback.print_exc()
 
 
@@ -40,8 +40,8 @@ class PluginManager():
       try:
         cves.extend(x.getCVEs())
       except Exception as e:
-        print("[!] Failed to get CVEs for %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to get CVEs for {x}: ")
+        print(f"[!]  -> {e}")
     return cves
 
 
@@ -49,12 +49,11 @@ class PluginManager():
     cve = {}
     for x in self.plugins:
       try:
-        refs = x.getRefs(cveID)
-        if refs:
+        if refs := x.getRefs(cveID):
           cve[x.name] = refs
       except Exception as e:
-        print("[!] Failed to get CVE refs for %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to get CVE refs for {x}: ")
+        print(f"[!]  -> {e}")
         traceback.print_exc()
     return cve
 
@@ -64,8 +63,8 @@ class PluginManager():
       try:
         x.updateRefs(cveID, cveData)
       except Exception as e:
-        print("[!] Failed to update CVE refs for %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to update CVE refs for {x}: ")
+        print(f"[!]  -> {e}")
         traceback.print_exc()
 
 
@@ -74,8 +73,8 @@ class PluginManager():
       try:
         x.cleanUp(cveID, cveData)
       except Exception as e:
-        print("[!] Failed to clean CVE refs for %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to clean CVE refs for {x}: ")
+        print(f"[!]  -> {e}")
         traceback.print_exc()
 
 
@@ -83,10 +82,9 @@ class PluginManager():
     searchables = []
     for x in self.plugins:
       try:
-        for s in x.getSearchables():
-          searchables.append(x.name+'.'+s)
+        searchables.extend(f'{x.name}.{s}' for s in x.getSearchables())
       except Exception as e:
-        print("[!] Failed to get searchables for %s: "%x)
-        print("[!]  -> %s"%e)
+        print(f"[!] Failed to get searchables for {x}: ")
+        print(f"[!]  -> {e}")
         traceback.print_exc()
     return searchables

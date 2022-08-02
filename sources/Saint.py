@@ -70,11 +70,14 @@ class Saint(Source):
     _bids   = cveData.get('refmap', {}).get('bid',   {})
     _osvdbs = cveData.get('refmap', {}).get('osvdb', {})
     cveData['saint'].extend(self.cves[cveID])
-    
+
     for bid   in _bids:   cveData['saint'].extend(self.bids[bid])
     for osvdb in _osvdbs: cveData['saint'].extend(self.osvdbs[osvdb])
     # make unique
-    cveData['saint'] = [dict(t) for t in set([tuple(d.items()) for d in cveData['saint']])]
+    cveData['saint'] = [
+        dict(t) for t in {tuple(d.items())
+                          for d in cveData['saint']}
+    ]
     # remove if empty
     if cveData['saint'] == []: cveData.pop('saint')
 

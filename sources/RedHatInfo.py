@@ -55,8 +55,8 @@ class RPMHandler(ContentHandler):
 
   def characters(self, ch):
     if self.cveTag:
-      if not ('rpms' in self.CVEs[ch.upper()] and
-        type(self.CVEs[ch.upper()]['rpms']) is list):
+      if ('rpms' not in self.CVEs[ch.upper()]
+          or type(self.CVEs[ch.upper()]['rpms']) is not list):
         self.CVEs[ch.upper()]['rpms'] = []
       self.CVEs[ch.upper()]['rpms'].append(self.rpm)
 

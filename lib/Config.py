@@ -30,8 +30,8 @@ class Configuration():
   def readSetting(cls, section, item, default):
     result = default
     try:
-      if   type(default) == bool: result = cls.ConfigParser.getboolean(section, item)
-      elif type(default) == int:  result = cls.ConfigParser.getint(section, item)
+      if type(result) == bool: result = cls.ConfigParser.getboolean(section, item)
+      elif type(result) == int:  result = cls.ConfigParser.getint(section, item)
       else:                       result = cls.ConfigParser.get(section, item)
     except:
       pass
@@ -60,7 +60,7 @@ class Configuration():
     try:
       response = req.urlopen(getfile)
     except:
-      msg = "[!] Could not fetch file %s"%getfile
+      msg = f"[!] Could not fetch file {getfile}"
       if cls.exitWhenNoSource(): sys.exit(msg)
       else:                      print(msg)
       data = None

@@ -17,14 +17,15 @@ if __name__ == '__main__':
   pm = PluginManager()                                         # Create plug-in manager
   pm.loadPlugins()                                             # Load all sources & parse data
 
-  cves = {}                                                    # Create empty dictionary to fill up
-  path = args.file if args.file else "VIA4CVE-feed.json"       # Generate path based on user preferences
+  path = args.file or "VIA4CVE-feed.json"
 
-  for _id in pm.getAllCVEIDs(): cves[_id] = pm.getCVERefs(_id) # Get data per CVE
+  cves = {_id: pm.getCVERefs(_id) for _id in pm.getAllCVEIDs()}
   if not args.no_update:
-    for _id in cves.keys():     pm.updateRefs(_id, cves[_id])  # Update data based on previous data
+    for _id, value in cves.items():
+      pm.updateRefs(_id, value)
   if not args.no_cleanup:
-    for _id in cves.keys():     pm.cleanUp(_id, cves[_id])     # Clean data
+    for _id, value_ in cves.items():
+      pm.cleanUp(_id, value_)
 
   data = {'cves': cves,
           'metadata': {'searchables': pm.getSearchables(),

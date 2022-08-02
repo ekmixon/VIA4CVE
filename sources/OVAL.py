@@ -107,8 +107,8 @@ class OVAL(Source):
   def updateRefs(self, cveID, cveData):
     if not cveData.get(SOURCE_NAME): cveData[SOURCE_NAME] = []
     for _id in cveData.get('refmap', {}).get('oval', []):
-      data = self.oval.get(_id)
-      if data: cveData[SOURCE_NAME].append(data)
+      if data := self.oval.get(_id):
+        cveData[SOURCE_NAME].append(data)
     if cveData[SOURCE_NAME] == []: cveData.pop(SOURCE_NAME)
 
   def cleanUp(self, cveID, cveData):
